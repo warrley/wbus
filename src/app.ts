@@ -1,5 +1,5 @@
-import express from "express";
 import dotenv from "dotenv"
+import express from "express";
 import { mainRouter } from "./routes/mainRouter";
 import { authRouter } from "./routes/authRouter";
 
