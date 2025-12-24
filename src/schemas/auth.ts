@@ -10,4 +10,4 @@ export const signinSchema = z.object({
 export const signupSchema = z.object({
     email: z.string("invalid email format"),
     password: z.string("required")
-})
+});
