@@ -1,24 +1,30 @@
-import z from "zod";
-import { prisma } from "../libs/prisma";
+import z, { email } from "zod";
 import bcrypt from "bcryptjs";
-import { signinSchema } from "../schemas/auth";
+import { signinSchema, signupSchema } from "../schemas/auth";
+import { prisma } from "../config/prisma";
 
-export const createUser = async (user: z.infer<typeof signinSchema>) => {
-    const hashPassword = await bcrypt.hash(user.password, 10);
-    user.password = hashPassword;
+export const createUser = async (data: z.infer<typeof signinSchema>) => {
+    if(await prisma.user.findFirst({ where: {  email: data.email } })) {
+        throw new Error("EMAIL_EXISTS");
+    };
 
-    console.log(user)
+    const hashPassword = await bcrypt.hash(data.password, 10);
     
-    const newUser = await prisma.user.create({
+    return await prisma.user.create({
         data: {
-            username: user.username,
-            email: user.email,
-            age: user.age,
-            password: user.password,
+            username: data.username,
+            email: data.email,
+            age: data.age,
+            password: hashPassword,
             money: 0,
-        }
+        },
     });
-    console.log(user)
-    
-    return newUser;
+};
+
+export const verifyUser = async (data: z.infer<typeof signupSchema>) => {
+    const user = await prisma.user.findFirst({ where: { email: data.email } });
+    if(!user) return false;
+    if(!bcrypt.compareSync(data.password, user.password)) return false;
+
+    return user;
 };
